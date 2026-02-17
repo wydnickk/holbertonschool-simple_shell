@@ -1,0 +1,17 @@
+.TH SIMPLE_SHELL 1 "February 2026" "1.0" "User Commands"
+.SH NAME
+simple_shell \- a simple UNIX command line interpreter
+.SH SYNOPSIS
+.B ./hsh
+.SH DESCRIPTION
+simple_shell is a basic UNIX command line interpreter written in C.
+It reads commands from standard input and executes them.
+.SH BUILTINS
+.B exit
+Exits the shell.
+.SH EXAMPLES
+.B ./hsh
+.br
+.B echo "/bin/ls" | ./hsh
+.SH AUTHOR
+Wydnickk
