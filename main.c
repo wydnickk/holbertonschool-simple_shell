@@ -13,6 +13,33 @@ void prompt(void)
 }
 
 /**
+ * trim_spaces - remove leading and trailing spaces/tabs
+ * @str: input string
+ *
+ * Return: pointer to trimmed string
+ */
+char *trim_spaces(char *str)
+{
+	char *end;
+
+	if (str == NULL)
+		return (NULL);
+
+	while (*str == ' ' || *str == '\t')
+		str++;
+
+	if (*str == '\0')
+		return (str);
+
+	end = str + strlen(str) - 1;
+	while (end > str && (*end == ' ' || *end == '\t'))
+		end--;
+
+	*(end + 1) = '\0';
+	return (str);
+}
+
+/**
  * run_command - execute a single command (no args)
  * @line: command string
  */
@@ -20,11 +47,13 @@ void run_command(char *line)
 {
 	pid_t pid;
 	char *args[2];
+	char *cmd;
 
-	if (line == NULL || *line == '\0')
+	cmd = trim_spaces(line);
+	if (cmd == NULL || *cmd == '\0')
 		return;
 
-	args[0] = line;
+	args[0] = cmd;
 	args[1] = NULL;
 
 	pid = fork();
