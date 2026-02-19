@@ -10,6 +10,8 @@
 extern char **environ;
 
 void prompt(void);
+char *trim_spaces(char *str);
+char **split_line(char *line);
 void run_command(char *line);
 
 #endif /* MAIN_H */

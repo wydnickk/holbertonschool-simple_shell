@@ -40,26 +40,78 @@ char *trim_spaces(char *str)
 }
 
 /**
- * run_command - execute a single command (no args)
- * @line: command string
+ * split_line - split line into arguments (space-separated)
+ * @line: input line
+ *
+ * Return: NULL-terminated array of strings
+ */
+char **split_line(char *line)
+{
+	int i, count = 0;
+	char **args;
+	char *p = line;
+
+	while (*p)
+	{
+		while (*p == ' ' || *p == '\t')
+			p++;
+		if (*p)
+		{
+			count++;
+			while (*p && *p != ' ' && *p != '\t')
+				p++;
+		}
+	}
+
+	args = malloc(sizeof(char *) * (count + 1));
+	if (!args)
+		return (NULL);
+
+	i = 0;
+	p = line;
+	while (*p)
+	{
+		while (*p == ' ' || *p == '\t')
+			p++;
+		if (*p)
+		{
+			args[i++] = p;
+			while (*p && *p != ' ' && *p != '\t')
+				p++;
+			if (*p)
+				*p++ = '\0';
+		}
+	}
+	args[i] = NULL;
+	return (args);
+}
+
+/**
+ * run_command - execute a command with arguments
+ * @line: command line
  */
 void run_command(char *line)
 {
 	pid_t pid;
-	char *args[2];
+	char **args;
 	char *cmd;
 
 	cmd = trim_spaces(line);
 	if (cmd == NULL || *cmd == '\0')
 		return;
 
-	args[0] = cmd;
-	args[1] = NULL;
+	args = split_line(cmd);
+	if (!args || !args[0])
+	{
+		free(args);
+		return;
+	}
 
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("Error");
+		free(args);
 		return;
 	}
 
@@ -73,10 +125,12 @@ void run_command(char *line)
 	{
 		wait(NULL);
 	}
+
+	free(args);
 }
 
 /**
- * main - Entry point for simple shell
+ * main - Entry point
  *
  * Return: 0 on success
  */
