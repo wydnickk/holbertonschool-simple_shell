@@ -1,7 +1,50 @@
 #include "main.h"
 
 /**
- * main - Entry point for the shell
+ * prompt - display shell prompt
+ */
+void prompt(void)
+{
+	printf("#cisfun$ ");
+	fflush(stdout);
+}
+
+/**
+ * run_command - execute a single command line
+ * @line: command string
+ */
+void run_command(char *line)
+{
+	pid_t pid;
+	char *args[2];
+
+	if (strlen(line) == 0)
+		return;
+
+	args[0] = line;
+	args[1] = NULL;
+
+	pid = fork();
+	if (pid == -1)
+	{
+		perror("Error");
+		return;
+	}
+
+	if (pid == 0)
+	{
+		if (execve(args[0], args, environ) == -1)
+			perror("./hsh");
+		exit(1);
+	}
+	else
+	{
+		wait(NULL);
+	}
+}
+
+/**
+ * main - Entry point for simple shell
  *
  * Return: 0 on success
  */
@@ -10,34 +53,22 @@ int main(void)
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
-	char **args;
 
 	while (1)
 	{
-		printf("$ ");
+		prompt();
+
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
+		{
+			printf("\n");
 			break;
+		}
 
 		if (nread > 0 && line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		args = fill_args(line);
-		if (args[0] == NULL)
-		{
-			free(args);
-			continue;
-		}
-
-		if (_strcmp(args[0], "exit") == 0)
-		{
-			hsh_exit(args);
-			free(args);
-			break;
-		}
-
-		execute_command(args);
-		free(args);
+		run_command(line);
 	}
 
 	free(line);
