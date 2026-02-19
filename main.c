@@ -1,16 +1,19 @@
 #include "main.h"
 
 /**
- * prompt - display shell prompt
+ * prompt - display shell prompt only if interactive
  */
 void prompt(void)
 {
-	printf("#cisfun$ ");
-	fflush(stdout);
+	if (isatty(STDIN_FILENO))
+	{
+		printf("#cisfun$ ");
+		fflush(stdout);
+	}
 }
 
 /**
- * run_command - execute a single command line
+ * run_command - execute a single command (no args)
  * @line: command string
  */
 void run_command(char *line)
@@ -18,7 +21,7 @@ void run_command(char *line)
 	pid_t pid;
 	char *args[2];
 
-	if (strlen(line) == 0)
+	if (line == NULL || *line == '\0')
 		return;
 
 	args[0] = line;
@@ -61,7 +64,8 @@ int main(void)
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 		{
-			printf("\n");
+			if (isatty(STDIN_FILENO))
+				printf("\n");
 			break;
 		}
 
