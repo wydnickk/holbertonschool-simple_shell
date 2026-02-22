@@ -1,4 +1,9 @@
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
 
 /**
  * prompt - display shell prompt only if interactive
@@ -95,6 +100,9 @@ void run_command(char *line)
 	pid_t pid;
 	char **args;
 	char *cmd;
+	char *path = NULL;
+	char *env_path, *dir, *path_copy;
+	char full[1024];
 
 	cmd = trim_spaces(line);
 	if (cmd == NULL || *cmd == '\0')
@@ -107,26 +115,61 @@ void run_command(char *line)
 		return;
 	}
 
+	/* PATH handle */
+	if (strchr(args[0], '/'))
+	{
+		if (access(args[0], X_OK) == 0)
+			path = strdup(args[0]);
+	}
+	else
+	{
+		env_path = getenv("PATH");
+		if (env_path)
+		{
+			path_copy = strdup(env_path);
+			dir = strtok(path_copy, ":");
+			while (dir)
+			{
+				snprintf(full, sizeof(full), "%s/%s", dir, args[0]);
+				if (access(full, X_OK) == 0)
+				{
+					path = strdup(full);
+					break;
+				}
+				dir = strtok(NULL, ":");
+			}
+			free(path_copy);
+		}
+	}
+
+	if (!path)
+	{
+		printf("%s: not found\n", args[0]);
+		free(args);
+		return;
+	}
+
+	/* fork only if command exists */
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("Error");
 		free(args);
+		free(path);
 		return;
 	}
 
 	if (pid == 0)
 	{
-		if (execve(args[0], args, environ) == -1)
+		if (execve(path, args, environ) == -1)
 			perror("./hsh");
 		exit(1);
 	}
 	else
-	{
 		wait(NULL);
-	}
 
 	free(args);
+	free(path);
 }
 
 /**
@@ -161,3 +204,4 @@ int main(void)
 	free(line);
 	return (0);
 }
+
