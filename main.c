@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/wait.h>
 
+extern char **environ; /* For execve environment */
+
 /**
  * prompt - display shell prompt only if interactive
  */
